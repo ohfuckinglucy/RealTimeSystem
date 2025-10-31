@@ -51,12 +51,10 @@ int main(int argc, char *argv[]) {
     strncpy(addr.sun_path, EXAMPLE_SOCK_PATH, sizeof(addr.sun_path) - 1);
 
     unlink(EXAMPLE_SOCK_PATH);
-    umask(0);
     
     if (bind(listen_fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         perror("bind"); close(listen_fd); return EXIT_FAILURE;
     }
-    chmod(EXAMPLE_SOCK_PATH, 0666);
 
     if (listen(listen_fd, 8) == -1) {
         perror("listen"); close(listen_fd); unlink(EXAMPLE_SOCK_PATH); return EXIT_FAILURE;

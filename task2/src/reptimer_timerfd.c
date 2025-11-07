@@ -91,6 +91,16 @@ int main(void) {
     close(tfd);
     return EXIT_SUCCESS;
 }
+/*
+ * clock_nanosleep() и timerfd:
+ *
+ * - clock_nanosleep(TIMER_ABSTIME) удобно для простых периодических циклов в одном потоке.
+ * - timerfd создаёт файловый дескриптор таймера, который можно интегрировать с poll/epoll,
+ *   что удобно для event-driven приложений и многопоточных серверов.
+ * - timerfd позволяет отслеживать пропущенные срабатывания, не требует сигналов и потоков.
+ * - Вывод: nanosleep проще для одиночных задач, timerfd предпочтительнее для асинхронной обработки.
+ */
+
 #else
 int main(void) {
     printf("reptimer_timerfd: Linux-only example (timerfd not available on this platform)\n");

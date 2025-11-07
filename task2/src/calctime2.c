@@ -84,6 +84,15 @@ int main(void) {
     }
 
     /* Статистика */
+    /*
+    * Использование TIMER_ABSTIME с clock_nanosleep позволяет задавать
+    * абсолютное время пробуждения (в монотонной шкале), а не относительную
+    * задержку. Это предотвращает накопление ошибки (дрейф): даже если
+    * одна итерация проспит на 10 мкс дольше, следующая всё равно
+    * проснётся в точно заданное абсолютное время по расписанию.
+    * Без TIMER_ABSTIME (т.е. с относительным sleep) ошибка складывалась бы
+    * от итерации к итерации, и период со временем "уходил бы".
+    */
     int64_t min_ns = INT64_MAX, max_ns = INT64_MIN, sum_ns = 0;
     for (int i = 0; i < NUM_SAMPLES; ++i) {
         if (deltas_ns[i] < min_ns) min_ns = deltas_ns[i];
@@ -92,24 +101,16 @@ int main(void) {
     }
     double avg_ns = (double)sum_ns / (double)NUM_SAMPLES;
 
-    // --- (Новое) Расчет стандартного отклонения ---
-    // Это показывает, насколько значения разбросаны вокруг среднего.
-    // Маленькое значение => стабильный период.
     double sum_sq_diff = 0;
     for (int i = 0; i < NUM_SAMPLES; ++i) {
         sum_sq_diff += pow((double)deltas_ns[i] - avg_ns, 2);
     }
     double std_dev_ns = sqrt(sum_sq_diff / NUM_SAMPLES);
 
-    printf("Period stats over %d samples (target: %" PRId64 " ns):\n", NUM_SAMPLES, period_ns);
-    printf("  min=%" PRId64 " ns, avg=%.1f ns, max=%" PRId64 " ns, std_dev=%.1f ns\n",
-           min_ns, avg_ns, max_ns, std_dev_ns);
-
-    /* Вывести первые несколько измерений для наглядности */
-    printf("\nFirst 10 samples (delta from previous actual wakeup, ns):\n");
-    for (int i = 0; i < 10 && i < NUM_SAMPLES; ++i) {
-        printf("  sample %d: %" PRId64 "\n", i, deltas_ns[i]);
-    }
+    printf("\n=== Period statistics over %d samples (target = %" PRId64 " ns) ===\n",
+        NUM_SAMPLES, period_ns);
+    printf("min = %" PRId64 " ns, avg = %.1f ns, max = %" PRId64 " ns, std_dev = %.1f ns\n",
+        min_ns, avg_ns, max_ns, std_dev_ns);
 
     return EXIT_SUCCESS;
 }

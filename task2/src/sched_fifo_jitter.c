@@ -87,6 +87,8 @@ int main(void) {
     clock_gettime(CLOCK_MONOTONIC, &next);
     int64_t next_ns = ts_to_ns(&next) + period;
 
+    struct timespec prev = next;
+
     for (int i = 0; i < samples; ++i) {
         ns_to_ts(next_ns, &next);
         int rc;
@@ -101,9 +103,23 @@ int main(void) {
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
+
+        int64_t now_ns = ts_to_ns(&now);
+        int64_t prev_ns = ts_to_ns(&prev);
+        int64_t actual_delta = now_ns - prev_ns;
         // The "error" or "jitter" for this cycle.
         // It's the difference between when we woke up and when we *should* have.
+
         deltas[i] = ts_to_ns(&now) - next_ns;
+
+        if (i < 10) {
+            printf("prev %ld.%09ld, new %ld.%09ld, delta %" PRId64 " ns\n",
+                   prev.tv_sec, prev.tv_nsec,
+                   now.tv_sec, now.tv_nsec,
+                   actual_delta);
+        }
+
+        prev = now;
         next_ns += period;
     }
 

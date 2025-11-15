@@ -64,7 +64,7 @@ void *t1(void *arg)
   printf("[T1 mid] стартует (фоновая нагрузка)\n");
   for (int i = 0; i < 200; i++) {
     // Загрузка времени
-    busy_ms(10);
+    busy_ms(30);
   }
   printf("[T1 mid] завершился\n");
   return NULL;

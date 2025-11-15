@@ -58,7 +58,10 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
+    struct timespec prev = t_next;
+
     int64_t next_ns = timespec_to_ns(&t_next) + period_ns; /* стартуем через один период */
+
     for (samples = 0; samples < NUM_SAMPLES; ++samples) {
         ns_to_timespec(next_ns, &t_next);
 
@@ -77,9 +80,19 @@ int main(void) {
             return EXIT_FAILURE;
         }
 
+        int64_t prev_ns = timespec_to_ns(&prev);
         int64_t now_ns = timespec_to_ns(&now);
-        deltas_ns[samples] = now_ns - (next_ns - period_ns); /* фактическая дельта */
+        deltas_ns[samples] = now_ns - prev_ns; /* фактическая дельта между сэмплами */
 
+        if (samples < 10){
+            printf("prev %ld.%09ld, new %ld.%09ld, delta %" PRId64 " ns\n",
+               prev.tv_sec, prev.tv_nsec,
+               now.tv_sec, now.tv_nsec,
+               now_ns - prev_ns);
+        }
+
+        prev_ns = now_ns;
+        prev = now;
         next_ns += period_ns;
     }
 
@@ -121,7 +134,8 @@ int main(void) {
     struct timespec req;
     struct timespec start, prev, now;
     const int num_samples = 5000;
-    long min_ns = 999999999L, max_ns = 0; long long sum_ns = 0;
+    long min_ns = 999999999L, max_ns = 0;
+    long long sum_ns = 0;
 
     setvbuf(stdout, NULL, _IOLBF, 0);
     clock_getres(CLOCK_REALTIME, &res_rt);
@@ -130,7 +144,8 @@ int main(void) {
     prev = start;
 
     for (int i = 0; i < num_samples; ++i) {
-        req.tv_sec = 0; req.tv_nsec = period_ns;
+        req.tv_sec = 0;
+        req.tv_nsec = period_ns;
         nanosleep(&req, NULL);
         clock_gettime(CLOCK_REALTIME, &now);
         long delta = (long)((now.tv_sec - prev.tv_sec) * 1000000000LL + (now.tv_nsec - prev.tv_nsec));

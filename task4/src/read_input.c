@@ -28,6 +28,13 @@ int main(int argc, char *argv[]) {
     // Использовать ioctl с EVIOCGNAME для получения имени
     // Вывести имя устройства
 
+    char name[256];
+
+    if (ioctl(fd, EVIOCGNAME(sizeof(name)), name) < 0){
+        perror("ioctl EVIOCGNAME");
+    } else {
+        printf("Device name: %s\n", name);
+    }
 
     printf("Reading events from %s. Press Ctrl+C to exit.\n", device_path);
 

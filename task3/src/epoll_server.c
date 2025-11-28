@@ -17,10 +17,19 @@
 #include <sys/un.h>
 #include <sys/eventfd.h>
 #include <errno.h>
+#include <pthread.h>
 
 #define MAX_EVENTS 10
 #define SOCKET_PATH "/tmp/epoll_server.sock"
 #define READ_BUFFER_SIZE 256
+
+void* trigger_event(void* arg) {
+    int efd = *(int*)arg;
+    sleep(5); // через 5 секунд
+    uint64_t val = 1;
+    write(efd, &val, sizeof(val));
+    return NULL;
+}
 
 void add_to_epoll(int epoll_fd, int fd, uint32_t events) {
     struct epoll_event event;
@@ -73,6 +82,9 @@ int main() {
 
     add_to_epoll(epoll_fd, server_fd, EPOLLIN);
     add_to_epoll(epoll_fd, event_fd, EPOLLIN);
+
+    pthread_t tid;
+    pthread_create(&tid, NULL, trigger_event, &event_fd);
 
     while (1) {
         int n_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);

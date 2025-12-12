@@ -42,7 +42,7 @@ int main(void) {
     setvbuf(stdout, NULL, _IOLBF, 0);
 
     struct mq_attr attr = {0};
-    attr.mq_maxmsg = 32;
+    attr.mq_maxmsg = 10;
     attr.mq_msgsize = 64;
 
     mqd_t mq = mq_open(QNAME, O_CREAT | O_RDWR | O_CLOEXEC, 0600, &attr);

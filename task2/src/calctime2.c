@@ -83,13 +83,16 @@ int main(void) {
         int64_t prev_ns = timespec_to_ns(&prev);
         int64_t now_ns = timespec_to_ns(&now);
         deltas_ns[samples] = now_ns - prev_ns; /* фактическая дельта между сэмплами */
-
         if (samples < 10){
             printf("prev %ld.%09ld, new %ld.%09ld, delta %" PRId64 " ns\n",
                prev.tv_sec, prev.tv_nsec,
                now.tv_sec, now.tv_nsec,
                now_ns - prev_ns);
         }
+
+        // printf("prev %ld.%09ld, new %ld.%09ld, delta %" PRIu64 " ns\n",
+        //        prev.tv_sec, prev.tv_nsec, now.tv_sec,
+        //        now.tv_nsec, deltas_ns[samples]);
 
         prev_ns = now_ns;
         prev = now;
